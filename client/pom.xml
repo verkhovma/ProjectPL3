@@ -15,16 +15,31 @@
     </properties>
 
     <dependencies>
+
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>21</version>
+            <version>21.0.1</version>
         </dependency>
+
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>21</version>
+            <version>21.0.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.12.1.GA</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>5.0.0.Alpha2</version>
+        </dependency>
+        
     </dependencies>
 
     <build>

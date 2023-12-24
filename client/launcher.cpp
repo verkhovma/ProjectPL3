@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <tchar.h>
 int _tmain(int argc, TCHAR *argv[]){
-//int main(){
     
     STARTUPINFO si;
     PROCESS_INFORMATION pi;

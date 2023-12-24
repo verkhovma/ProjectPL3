@@ -1,22 +1,41 @@
 package vnl;
 
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
 public class Main extends Application{
-    public void start(Stage primaryStage){
-        Label root = new Label("this is client\ngraphic javafx app");
-        Scene scene = new Scene(root, 1280, 720);
+    ClientController controller;
+
+    @Override
+    public void start(Stage primaryStage) throws Exception{
+        // load GUI file.fxml
+        FXMLLoader loader = new FXMLLoader(
+            getClass().getClassLoader().getResource("client.fxml")
+            );
+        // create and set controller
+        controller = new ClientController();
+        loader.setController(controller);
+
+        Parent root = loader.load();
+        // connect to server
+        controller.connect();
+        
+        // set and show GUI window
+        Scene scene = new Scene(root);
         primaryStage.setTitle("PL3-client");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-    public void run(Stage primaryStage){
-        primaryStage.toFront();
+
+    public void stop(){
+        // close connection when GUI window closed by user
+        controller.disconnect();
     }
-    public static void main(String[] args) {
+
+    public static void main(String[] args){
         Application.launch(args);
     }
 }
