@@ -33,94 +33,100 @@ import javafx.scene.layout.VBox;
 public class ClientController {
     
     @FXML
-    private Button btn_connect;
+    public Button btn_connect;
 
     @FXML
-    private Button btn_createRoom;
+    public Button btn_createRoom;
 
     @FXML
-    private Button btn_disconnect;
+    public Button btn_disconnect;
 
     @FXML
-    private Button btn_enterRoom;
+    public Button btn_enterRoom;
 
     @FXML
-    private Button btn_quitRoom;
+    public Button btn_quitRoom;
 
     @FXML
-    private Button btn_startRoom;
+    public Button btn_startRoom;
 
     @FXML
-    private HBox hbox_cardSelector;
+    public HBox hbox_cardSelector;
 
     @FXML
-    private HBox hbox_titleRoom;
+    public HBox hbox_titleRoom;
 
     @FXML
-    private ImageView imgv_cardPreview;
+    public ImageView imgv_cardPreview;
 
     @FXML
-    private ImageView imgv_connect;
+    public ImageView imgv_connect;
 
     @FXML
-    private Label lbl_cardPreview;
+    public Label lbl_cardPreview;
 
     @FXML
-    private Label lbl_connect;
+    public Label lbl_connect;
 
     @FXML
-    private Label lbl_idRoom;
+    public Label lbl_descriptionRoom;
 
     @FXML
-    private Label lbl_listAvailable;
+    public Label lbl_idRoom;
 
     @FXML
-    private Label lbl_listSelected;
+    public Label lbl_listAvailable;
 
     @FXML
-    private Label lbl_lobby;
+    public Label lbl_listSelected;
 
     @FXML
-    private Label lbl_titleRoom;
+    public Label lbl_lobby;
 
     @FXML
-    private TextField tf_address;
+    public Label lbl_titleRoom;
 
     @FXML
-    private TextField tf_idRoom;
+    public TextField tf_address;
 
     @FXML
-    private TextField tf_port;
+    public TextField tf_idRoom;
 
     @FXML
-    private VBox vbox_cardPreview;
+    public TextField tf_port;
 
     @FXML
-    private VBox vbox_connect;
+    public VBox vbox_cardPreview;
 
     @FXML
-    private VBox vbox_listAvailable;
+    public VBox vbox_connect;
 
     @FXML
-    private VBox vbox_listSelected;
+    public VBox vbox_listAvailable;
 
     @FXML
-    private VBox vbox_lobby;
+    public VBox vbox_listSelected;
 
     @FXML
-    private VBox vbox_room;
+    public VBox vbox_lobby;
+
+    @FXML
+    public VBox vbox_room;
 
     // status of connection
-    private BooleanProperty connected;
+    public BooleanProperty connected;
     // test stroke, transfer received data to binded GUI units
-    private StringProperty receivingMessageModel = new SimpleStringProperty("");
+    public StringProperty receivingMessageModel = new SimpleStringProperty("");
+    // contain current Application controller, which allow
+    // ClientHandler change GUI
+    public ClientController thisController;
     // channel to exchange message
-    private Channel channel;
+    public Channel channel;
     // thread processing connection
-    private EventLoopGroup workerGroup;
+    public EventLoopGroup workerGroup;
 
     //resources
-    private Image loadingImage;
+    public Image loadingImage;
 
     @FXML
     void initialize() {
@@ -130,6 +136,7 @@ public class ClientController {
         vbox_lobby.setVisible(false);
         vbox_room.setVisible(false);
         connected = new SimpleBooleanProperty(false);
+        thisController = this;
         loadingImage = new Image(getClass().getClassLoader().getResource("loading.gif").toExternalForm());
     }
 
@@ -208,7 +215,7 @@ public class ClientController {
                         ch.pipeline().addLast(
                             new DataDecoder(),
                             new DataEncoder(),
-                            new ClientHandler(receivingMessageModel),
+                            new ClientHandler(thisController, receivingMessageModel),
                             new LoggingHandler(LogLevel.INFO)
                             );
                     }
@@ -287,7 +294,7 @@ public class ClientController {
     }
 
     // Task of send Data via argument
-    private class MyTask extends Task<Void>{
+    public class MyTask extends Task<Void>{
         public Data msg;
 
         public MyTask(Data inMsg){
@@ -367,6 +374,7 @@ public class ClientController {
                 ChannelFuture f = channel.writeAndFlush(msg);
                 f.sync();
                 Platform.runLater(()->{
+                    lbl_idRoom.setText(tf_idRoom.getText());
                     lbl_lobby.setText("Waiting room");
                 });
                 return null;

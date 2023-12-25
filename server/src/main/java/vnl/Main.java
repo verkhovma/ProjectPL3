@@ -1,5 +1,7 @@
 package vnl;
 
+import java.util.ArrayList;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -13,6 +15,8 @@ import io.netty.handler.logging.LoggingHandler;
 
 public class Main {
     private int port;
+    private int indexFlow;
+    private ArrayList<GameRoom> rooms;
 
     public Main(int port){
         this.port = port;
@@ -29,6 +33,8 @@ public class Main {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         // group of threads processing connections 
         EventLoopGroup workerGroup = new NioEventLoopGroup();
+        // list of all rooms
+        rooms = new ArrayList<>();
         try{
             // setup connection processor
             ServerBootstrap b = new ServerBootstrap();
@@ -47,7 +53,7 @@ public class Main {
                         ch.pipeline().addLast(
                             new DataDecoder(),
                             new DataEncoder(),
-                            new ServerHandler(),
+                            new ServerHandler(rooms), // transfer pointer to rooms list
                             new LoggingHandler(LogLevel.INFO)
                             );
                     }

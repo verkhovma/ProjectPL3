@@ -1,6 +1,7 @@
 vnl\DataDecoder.class
 vnl\Main$1.class
+vnl\Main.class
+vnl\GameRoom.class
 vnl\DataEncoder.class
 vnl\ServerHandler.class
 vnl\Data.class
-vnl\Main.class

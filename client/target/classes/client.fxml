@@ -45,6 +45,7 @@
                   </Label>
                </children>
             </HBox>
+            <Label fx:id="lbl_descriptionRoom" text="Waiting for opponent" />
             <HBox fx:id="hbox_cardSelector" prefHeight="300.0" prefWidth="330.0">
                <children>
                   <VBox fx:id="vbox_listAvailable" prefHeight="300.0" prefWidth="110.0">
