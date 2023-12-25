@@ -27,11 +27,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 public class ClientController {
     
+    @FXML
+    public Button btn_capitulate;
+
     @FXML
     public Button btn_connect;
 
@@ -51,6 +55,9 @@ public class ClientController {
     public Button btn_startRoom;
 
     @FXML
+    public GridPane gp_field;
+
+    @FXML
     public HBox hbox_cardSelector;
 
     @FXML
@@ -63,6 +70,9 @@ public class ClientController {
     public ImageView imgv_connect;
 
     @FXML
+    public Label lbl_action;
+
+    @FXML
     public Label lbl_cardPreview;
 
     @FXML
@@ -70,6 +80,9 @@ public class ClientController {
 
     @FXML
     public Label lbl_descriptionRoom;
+
+    @FXML
+    public Label lbl_fieldRoomID;
 
     @FXML
     public Label lbl_idRoom;
@@ -84,7 +97,13 @@ public class ClientController {
     public Label lbl_lobby;
 
     @FXML
-    public Label lbl_titleRoom;
+    public Label lbl_myCount;
+
+    @FXML
+    public Label lbl_opponentCount;
+
+    @FXML
+    public Label lbl_turn;
 
     @FXML
     public TextField tf_address;
@@ -102,6 +121,9 @@ public class ClientController {
     public VBox vbox_connect;
 
     @FXML
+    public VBox vbox_field;
+
+    @FXML
     public VBox vbox_listAvailable;
 
     @FXML
@@ -109,6 +131,12 @@ public class ClientController {
 
     @FXML
     public VBox vbox_lobby;
+
+    @FXML
+    public VBox vbox_myCards;
+
+    @FXML
+    public VBox vbox_opponentCards;
 
     @FXML
     public VBox vbox_room;
@@ -135,6 +163,7 @@ public class ClientController {
         vbox_connect.setVisible(true);
         vbox_lobby.setVisible(false);
         vbox_room.setVisible(false);
+        vbox_field.setVisible(false);
         connected = new SimpleBooleanProperty(false);
         thisController = this;
         loadingImage = new Image(getClass().getClassLoader().getResource("loading.gif").toExternalForm());
@@ -393,11 +422,98 @@ public class ClientController {
 
     @FXML
     void quitRoom(ActionEvent event) {
+        if(!connected.get()){
+            return;
+        }
+        // prepare request
+        Data msg = new Data(9, "", 0, null, 0, 0, 0);
+        
+        // task what sends prepared data
+        Task<Void> task = new MyTask(msg) {
+            @Override
+            public Void call() throws Exception{
+                ChannelFuture f = channel.writeAndFlush(msg);
+                f.sync();
+                Platform.runLater(()->{
+                    vbox_room.setVisible(false);
+                    vbox_lobby.setVisible(true);
+                    vbox_listAvailable.getChildren().clear();
+                    vbox_listSelected.getChildren().clear();
+                });
+                return null;
+            }
+            @Override
+            protected void failed(){
+                Throwable e = getException();
+                e.printStackTrace();
+                disconnect();
+            }
+        };
 
+        // execute of send task in separate thread
+        new Thread(task).start();
     }
 
     @FXML
     void startRoom(ActionEvent event) {
+        if(!connected.get()){
+            return;
+        }
+        // prepare request
+        Data msg = new Data(0, "", 0, null, 0, 0, 0);
+        try{
+            if(vbox_listSelected.getChildren().size() == 6){ // upper labels too count, but need 5 cards
+                ArrayList<Integer> list = new ArrayList<>();
+                for(int i=1; i<6; i++){
+                    HBox hbox_card = (HBox) vbox_listSelected.getChildren().get(i);
+                    Label lbl_cardId = (Label) hbox_card.getChildren().get(0);
+                    String cardId = lbl_cardId.getText().split(":")[0];
+                    list.add(Integer.parseInt(cardId));
+                }
+                msg = new Data(
+                    8,
+                    "",
+                    0,
+                    list,
+                    0,
+                    0,
+                    0
+                );
+            }else{
+                lbl_descriptionRoom.setText("Incorrect quantity! Choose 5 cards");
+                return;
+            }
+        }catch(NumberFormatException e){
+            e.printStackTrace();
+            return;
+        }
+        
+        // task what sends prepared data
+        Task<Void> task = new MyTask(msg) {
+            @Override
+            public Void call() throws Exception{
+                ChannelFuture f = channel.writeAndFlush(msg);
+                f.sync();
+                Platform.runLater(()->{
+                    lbl_descriptionRoom.setText("Preparing game");
+                    imgv_cardPreview.setImage(loadingImage);
+                });
+                return null;
+            }
+            @Override
+            protected void failed(){
+                Throwable e = getException();
+                e.printStackTrace();
+                disconnect();
+            }
+        };
 
+        // execute of send task in separate thread
+        new Thread(task).start();
+    }
+
+    @FXML
+    void capitulate(ActionEvent event) {
+        
     }
 }

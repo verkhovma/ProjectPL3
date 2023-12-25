@@ -58,6 +58,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter{
 
             //prepare message: answer of new room
             msg = new Data(4, "", roomId, null, 0, 0, 0);
+
         // connect to exist room
         }else if(msg.header == 5){
             // check if user already at room, then quit
@@ -85,7 +86,18 @@ public class ServerHandler extends ChannelInboundHandlerAdapter{
             }else{
                 msg = new Data(6, "", 0, null, 0, 0, 0);
             }
+        
+
+        // quit from room
+        }else if(msg.header == 9){
+            if(currentPlayer){
+                rooms.get(roomId-1).player1 = false;
+            }else{
+                rooms.get(roomId-1).player2 = false;
+            }
+            rooms.get(roomId-1).free();
         }
+
         // send answer to client via encoder
         ctx.writeAndFlush(msg);
     }

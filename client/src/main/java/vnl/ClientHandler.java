@@ -34,11 +34,13 @@ public class ClientHandler extends ChannelHandlerAdapter{
                 app.lbl_descriptionRoom.setText("Waiting for opponent");
                 app.imgv_cardPreview.setImage(app.loadingImage);
             });
+
         // can not enter room
         }else if(msg.header == 6){
             Platform.runLater(()->{
                 app.lbl_lobby.setText("Room not found");
             });
+
         // enter to room and start choose cards
         }else if(msg.header == 7){
             Platform.runLater(()->{
@@ -51,7 +53,7 @@ public class ClientHandler extends ChannelHandlerAdapter{
                     // initial add cards
                     btn_select = new Button("+");
                     HBox card = new HBox(
-                        new Label(Integer.toString(msg.list.get(i)) + "card title"),
+                        new Label(Integer.toString(msg.list.get(i)) + ": card title"),
                         btn_select
                     );
                     app.vbox_listAvailable.getChildren().add(card);
@@ -63,7 +65,7 @@ public class ClientHandler extends ChannelHandlerAdapter{
         }
     }
 
-    public synchronized void select(HBox inCard){
+    public void select(HBox inCard){
         Platform.runLater(()->{
             // add new selected card
             btn_deselect = new Button("-");
@@ -92,7 +94,7 @@ public class ClientHandler extends ChannelHandlerAdapter{
         });
     }
 
-    public synchronized void deselect(HBox inCard){
+    public void deselect(HBox inCard){
         Platform.runLater(()->{
             btn_select = new Button("+");
             HBox card = new HBox(
@@ -111,12 +113,8 @@ public class ClientHandler extends ChannelHandlerAdapter{
                 // set new index
                 iterated_button.setUserData(i);
                 // update links via rotation
-                synchronized(app){
-                    app.vbox_listSelected.getChildren().remove(indexToRemove);
-                }
-                synchronized(app){
-                    app.vbox_listSelected.getChildren().add(iterated_card);
-                }
+                app.vbox_listSelected.getChildren().remove(indexToRemove);
+                app.vbox_listSelected.getChildren().add(iterated_card);
             }
             // select card via click on button +
             btn_select.setOnAction(e->select(card));

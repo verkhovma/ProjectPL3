@@ -31,11 +31,6 @@ public class DataDecoder extends ByteToMessageDecoder{
         // discard rest of frame to prepare next unambiguosly reading
         int spaceSize = 256 - (4 * (7 + listSize) + fieldLength);
         in.readBytes(spaceSize);
-        /*
-        for(int i=0; i < spaceSize; i++){
-            in.readByte();
-        }
-        */
         // transfer received object to handler
         out.add(new Data(
                 header,

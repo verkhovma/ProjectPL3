@@ -12,28 +12,29 @@ public class Data {
      * 6. ответ неудачного присоединения к комнате
      * 7. запрос выбора карт
      * 8. ответ выбора карт
-     * 9. статус хода + обновление поля
-     * 10. ход
-     * 11. статус торговли
-     * 12. торговля
-     * 13. ошибка + описание
+     * 9. выход из комнаты
+     * 10. статус хода + обновление поля
+     * 11. ход
+     * 12. статус торговли
+     * 13. торговля
+     * 14. ошибка + описание
      */
     public int header = 0;
 
     // client: 1 username:password
-    // server: 2 login, 13 error description
+    // server: 2 login, 14 error description
     public String field = "";
 
     // client: 5 id of room
-    // server: 4 id of room, 9 turn status (your turn or opponent)
+    // server: 4 id of room, 10 turn status (your turn or opponent)
     public int id = 0;
 
     // client: 8 list of chosen cards
-    // server: 7 list of user's cards, 12 list of trade
+    // server: 7 list of user's cards, 13 list of trade
     public ArrayList<Integer> list = new ArrayList<>();
 
-    // client: 10 card number, position to place: row, col, 12 trade card num
-    // server: 9 card number, position of last added card
+    // client: 11 card number, position to place: row, col, 13 trade card num
+    // server: 10 card number, position of last added card
     public int card_num = 0;
     public int cli_row = 0;
     public int cli_col = 0;

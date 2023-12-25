@@ -15,7 +15,6 @@ import io.netty.handler.logging.LoggingHandler;
 
 public class Main {
     private int port;
-    private int indexFlow;
     private ArrayList<GameRoom> rooms;
 
     public Main(int port){
