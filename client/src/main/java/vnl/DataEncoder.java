@@ -20,10 +20,16 @@ public class DataEncoder extends ChannelHandlerAdapter{
         encoded.writeInt(filedBytes.length);
         encoded.writeBytes(filedBytes);
         encoded.writeInt(msg.id);
-        int listSize = msg.list.size();
-        encoded.writeInt(listSize);
-        for(int elem: msg.list){
-            encoded.writeInt(elem);
+        
+        int listSize = 0;
+        if(msg.list != null){
+            listSize = msg.list.size();
+            encoded.writeInt(listSize);
+            for(int elem: msg.list){
+                encoded.writeInt(elem);
+            }
+        }else{
+            encoded.writeInt(listSize);
         }
         encoded.writeInt(msg.card_num);
         encoded.writeInt(msg.cli_row);

@@ -20,8 +20,6 @@ public class Main extends Application{
         loader.setController(controller);
 
         Parent root = loader.load();
-        // connect to server
-        controller.connect();
         
         // set and show GUI window
         Scene scene = new Scene(root);
