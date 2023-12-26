@@ -27,14 +27,15 @@ public class ServerHandler extends ChannelInboundHandlerAdapter{
         // receive decoded data from decoder
         Data msg = (Data) inMsg;
         System.out.println("Receive request #" + msg.header);
+
         // create new room
         if(msg.header == 3){
             // check if user already at room, then quit
             if((roomId > 0) && rooms.get(roomId-1).free == false){
                 if(currentPlayer){
-                    rooms.get(roomId-1).player1 = false;
+                    rooms.get(roomId-1).pl1_connect = false;
                 }else{
-                    rooms.get(roomId-1).player2 = false;
+                    rooms.get(roomId-1).pl2_connect = false;
                 }
                 rooms.get(roomId-1).free();
             }
@@ -43,6 +44,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter{
             for(int i=0; i < rooms.size(); i++){
                 if(rooms.get(i).free){
                     rooms.get(i).free = false;
+                    rooms.get(i).pl1_connect = true;
                     rooms.get(i).pl1_ctx = ctx;
                     roomId = i+1;
                     break;
@@ -64,16 +66,16 @@ public class ServerHandler extends ChannelInboundHandlerAdapter{
             // check if user already at room, then quit
             if((roomId > 0) && rooms.get(roomId-1).free == false){
                 if(currentPlayer){
-                    rooms.get(roomId-1).player1 = false;
+                    rooms.get(roomId-1).pl1_connect = false;
                 }else{
-                    rooms.get(roomId-1).player2 = false;
+                    rooms.get(roomId-1).pl2_connect = false;
                 }
                 rooms.get(roomId-1).free();
             }
             // try to enter requested room
-            if((msg.id-1 >= 0) && (msg.id-1 < rooms.size()) && (rooms.get(msg.id-1).free == false) && (rooms.get(msg.id-1).player2 == false)){
+            if((msg.id-1 >= 0) && (msg.id-1 < rooms.size()) && (rooms.get(msg.id-1).free == false) && (rooms.get(msg.id-1).pl2_connect == false)){
                 roomId = msg.id;
-                rooms.get(roomId-1).player2 = true;
+                rooms.get(roomId-1).pl2_connect = true;
                 currentPlayer = false;
                 rooms.get(roomId-1).connect2nd();
                 rooms.get(roomId-1).pl2_ctx = ctx;
@@ -87,15 +89,39 @@ public class ServerHandler extends ChannelInboundHandlerAdapter{
                 msg = new Data(6, "", 0, null, 0, 0, 0);
             }
         
+        // get chosen card
+        }else if(msg.header == 8){
+            if(msg.list.size() == 5){
+                play:{
+                    if(currentPlayer && (rooms.get(roomId-1).pl1_ready == false)){
+                        rooms.get(roomId-1).pl1_ready = true;
+                        rooms.get(roomId-1).pl1_list = msg.list;
+                    }else if(rooms.get(roomId-1).pl2_ready == false){
+                        rooms.get(roomId-1).pl2_ready = true;
+                        rooms.get(roomId-1).pl2_list = msg.list;
+                    }else{
+                        msg = new Data(14, "already in game", 0, null, 0, 0, 0);
+                        break play; // exit from if, when already in game
+                    }
+                    // start game after receive list
+                    rooms.get(roomId-1).start_play();
+                    return;
+                    //msg = new Data(0, "", 0, null, 0, 0, 0);
+                }
+            }else{
+                msg = new Data(14, "incorrect amount of cards", 0, null, 0, 0, 0);
+            }
 
         // quit from room
         }else if(msg.header == 9){
             if(currentPlayer){
-                rooms.get(roomId-1).player1 = false;
+                rooms.get(roomId-1).pl1_connect = false;
             }else{
-                rooms.get(roomId-1).player2 = false;
+                rooms.get(roomId-1).pl2_connect = false;
             }
             rooms.get(roomId-1).free();
+
+        //
         }
 
         // send answer to client via encoder
@@ -105,9 +131,9 @@ public class ServerHandler extends ChannelInboundHandlerAdapter{
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx){
         if(currentPlayer){
-            rooms.get(roomId-1).player1 = false;
+            rooms.get(roomId-1).pl1_connect = false;
         }else{
-            rooms.get(roomId-1).player2 = false;
+            rooms.get(roomId-1).pl2_connect = false;
         }
         rooms.get(roomId-1).free();
     }

@@ -2,8 +2,12 @@ vnl\DataDecoder.class
 vnl\ClientController$1.class
 vnl\ClientHandler.class
 vnl\ClientController$3.class
+vnl\ClientController$6.class
+vnl\ClientHandler$CardStatus.class
+vnl\ClientController$7.class
 vnl\DataEncoder.class
 vnl\ClientController$2.class
+vnl\ClientHandler$1.class
 vnl\ClientController$5.class
 vnl\ClientController.class
 vnl\Main.class

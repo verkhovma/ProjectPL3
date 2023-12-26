@@ -50,10 +50,10 @@ public class Main {
                          * and encode sending message
                         */
                         ch.pipeline().addLast(
+                            new LoggingHandler(LogLevel.INFO),
                             new DataDecoder(),
                             new DataEncoder(),
-                            new ServerHandler(rooms), // transfer pointer to rooms list
-                            new LoggingHandler(LogLevel.INFO)
+                            new ServerHandler(rooms) // transfer pointer to rooms list
                             );
                     }
                 })

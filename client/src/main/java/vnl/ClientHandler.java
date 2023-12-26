@@ -1,12 +1,26 @@
 package vnl;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import javafx.application.Platform;
 import javafx.beans.property.StringProperty;
+import javafx.concurrent.Task;
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 
 public class ClientHandler extends ChannelHandlerAdapter{
     private final StringProperty receivingMessageModel;
@@ -25,6 +39,7 @@ public class ClientHandler extends ChannelHandlerAdapter{
     public void channelRead(ChannelHandlerContext ctx, Object inMsg){
         // receive decoded data from decoder
         Data msg = (Data) inMsg;
+
         // room created
         if(msg.header == 4){
             Platform.runLater(()->{
@@ -62,9 +77,140 @@ public class ClientHandler extends ChannelHandlerAdapter{
                     btn_select.setOnAction(e->select(card));
                 }
             });
+
+        // start play
+        }else if(msg.header == 10){
+            Platform.runLater(()->{
+                // setup field
+                app.vbox_room.setVisible(false);
+                app.vbox_field.setVisible(true);
+                app.lbl_fieldRoomID.setText(app.lbl_idRoom.getText());
+                for(int i=0; i<9; i++){
+                    Button btn_elem = (Button) app.gp_field.getChildren().get(i);
+                    // means what square is free
+                    btn_elem.setUserData(new CardStatus(0));
+                    btn_elem.setText("free");
+                }
+                // create lists of cards
+                for(Integer elem: app.chosen_cards){
+                    app.vbox_opponentCards.getChildren().add(new Button("opponent card"));
+                    Button card = new Button(Integer.toString(elem) + " card");
+                    //card.setUserData(new CardStatus(elem));
+                    app.vbox_myCards.getChildren().add(card);
+                }
+                // initialization turn
+                if(msg.id == 0){
+                    app.lbl_turn.setText("Opponent turn");
+                    app.lbl_action.setText("Wait");
+                    for(Node elem: app.vbox_myCards.getChildren()){
+                        Button btn_elem = (Button) elem;
+                        btn_elem.setOnAction(null);
+                    }
+                }else{
+                    app.lbl_turn.setText("Your turn");
+                    app.lbl_action.setText("Choose card");
+                    for(int i=0; i<5; i++){
+                        Button btn_elem = (Button) app.vbox_myCards.getChildren().get(i);
+                        btn_elem.setUserData(new CardStatus(i));
+                        btn_elem.setOnAction(e->choose_card(btn_elem));
+                    }
+                }
+            });
         }
     }
 
+    public class CardStatus{
+        public int value;
+        public Boolean selectStatus;
+
+        public CardStatus(int inValue){
+            value = inValue;
+            selectStatus = false;
+        }
+    }
+
+    public void choose_square(Button square, int inIndex, Button card){
+        // save parameters
+        int cardNum = app.chosen_cards.get(((CardStatus) card.getUserData()).value);
+        ((CardStatus) square.getUserData()).value = cardNum;
+        ((CardStatus) square.getUserData()).selectStatus = true;
+        // send chosen card to server and give turn to next player
+        for(int i=0; i<9; i++){
+            Button btn_elem = (Button) app.gp_field.getChildren().get(i);
+            btn_elem.setOnAction(null);
+        }
+        Data msg = new Data(12, "", 0, null, 
+            cardNum,
+            inIndex / 3,
+            inIndex % 3);
+        
+        // task what sends prepared data
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception{
+                ChannelFuture f = app.channel.writeAndFlush(msg);
+                f.sync();
+                Platform.runLater(()->{
+                    app.lbl_turn.setText("Opponent turn");
+                    app.lbl_action.setText("Wait");
+                    for(Node elem: app.vbox_myCards.getChildren()){
+                        Button btn_elem = (Button) elem;
+                        btn_elem.setOnAction(null);
+                    }
+                    square.setText(Integer.toString(cardNum));
+                    app.vbox_myCards.getChildren().remove(((CardStatus) card.getUserData()).value);
+                });
+                return null;
+            }
+            @Override
+            protected void failed(){
+                Throwable e = getException();
+                e.printStackTrace();
+                app.disconnect();
+            }
+        };
+
+        // execute of send task in separate thread
+        new Thread(task).start();
+    }
+
+    public void choose_card(Button card){
+        if(! ((CardStatus) card.getUserData()).selectStatus){
+            app.lbl_action.setText("Choose square of board");
+            // clear previuos selected cards 
+            for(Node elem: app.vbox_myCards.getChildren()){
+                Button btn_elem = (Button) elem;
+                btn_elem.setBorder(null);
+                ((CardStatus) btn_elem.getUserData()).selectStatus = false;
+            }
+            // highlight selected card
+            card.setBorder(new Border(new BorderStroke(
+                Color.BLUE, BorderStrokeStyle.SOLID,
+                CornerRadii.EMPTY, new BorderWidths(5)
+            )));
+            ((CardStatus) card.getUserData()).selectStatus = true;
+            // available place card on field
+            for(int i=0; i<9; i++){
+                Button btn_elem = (Button) app.gp_field.getChildren().get(i);
+                //if card not already selected, when available it for select
+                int index = i;
+                if(! ((CardStatus) btn_elem.getUserData()).selectStatus){
+                    btn_elem.setOnAction(e->choose_square(btn_elem, index, card));
+                }
+            }
+        }else{
+            app.lbl_action.setText("Choose card");
+            card.setBorder(null);
+            ((CardStatus) card.getUserData()).selectStatus = false;
+            // if no chosen card, deny place on field
+            for(int i=0; i<9; i++){
+                Button btn_elem = (Button) app.gp_field.getChildren().get(i);
+                btn_elem.setOnAction(null);
+            }
+        }
+    }
+
+    // selecting card for game
     public void select(HBox inCard){
         Platform.runLater(()->{
             // add new selected card
@@ -94,6 +240,7 @@ public class ClientHandler extends ChannelHandlerAdapter{
         });
     }
 
+    // deselecting card for game
     public void deselect(HBox inCard){
         Platform.runLater(()->{
             btn_select = new Button("+");

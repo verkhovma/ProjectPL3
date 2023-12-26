@@ -106,6 +106,17 @@
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                           </rowConstraints>
+                           <children>
+                              <Button fx:id="btn_gp_00" mnemonicParsing="false" text="00" />
+                              <Button fx:id="btn_gp_01" mnemonicParsing="false" text="01" GridPane.columnIndex="1" />
+                              <Button fx:id="btn_gp_02" mnemonicParsing="false" text="02" GridPane.columnIndex="2" />
+                              <Button fx:id="btn_gp_10" mnemonicParsing="false" text="10" GridPane.rowIndex="1" />
+                              <Button fx:id="btn_gp_11" mnemonicParsing="false" text="11" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <Button fx:id="btn_gp_12" mnemonicParsing="false" text="12" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                              <Button fx:id="btn_gp_20" mnemonicParsing="false" text="20" GridPane.rowIndex="2" />
+                              <Button fx:id="btn_gp_21" mnemonicParsing="false" text="21" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <Button fx:id="btn_gp_22" mnemonicParsing="false" text="22" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                           </children>
                         </GridPane>
                         <Label fx:id="lbl_action" text="Action" />
                      </children>

@@ -49,6 +49,33 @@ public class ClientController {
     public Button btn_enterRoom;
 
     @FXML
+    public Button btn_gp_00;
+
+    @FXML
+    public Button btn_gp_01;
+
+    @FXML
+    public Button btn_gp_02;
+
+    @FXML
+    public Button btn_gp_10;
+
+    @FXML
+    public Button btn_gp_11;
+
+    @FXML
+    public Button btn_gp_12;
+
+    @FXML
+    public Button btn_gp_20;
+
+    @FXML
+    public Button btn_gp_21;
+
+    @FXML
+    public Button btn_gp_22;
+
+    @FXML
     public Button btn_quitRoom;
 
     @FXML
@@ -152,6 +179,8 @@ public class ClientController {
     public Channel channel;
     // thread processing connection
     public EventLoopGroup workerGroup;
+    // list of chosen cards
+    public ArrayList<Integer> chosen_cards;
 
     //resources
     public Image loadingImage;
@@ -242,10 +271,10 @@ public class ClientController {
                          * and encode sending message
                         */
                         ch.pipeline().addLast(
+                            new LoggingHandler(LogLevel.INFO),
                             new DataDecoder(),
                             new DataEncoder(),
-                            new ClientHandler(thisController, receivingMessageModel),
-                            new LoggingHandler(LogLevel.INFO)
+                            new ClientHandler(thisController, receivingMessageModel)
                             );
                     }
                 });
@@ -463,18 +492,18 @@ public class ClientController {
         Data msg = new Data(0, "", 0, null, 0, 0, 0);
         try{
             if(vbox_listSelected.getChildren().size() == 6){ // upper labels too count, but need 5 cards
-                ArrayList<Integer> list = new ArrayList<>();
+                chosen_cards = new ArrayList<>();
                 for(int i=1; i<6; i++){
                     HBox hbox_card = (HBox) vbox_listSelected.getChildren().get(i);
                     Label lbl_cardId = (Label) hbox_card.getChildren().get(0);
                     String cardId = lbl_cardId.getText().split(":")[0];
-                    list.add(Integer.parseInt(cardId));
+                    chosen_cards.add(Integer.parseInt(cardId));
                 }
                 msg = new Data(
                     8,
                     "",
                     0,
-                    list,
+                    chosen_cards,
                     0,
                     0,
                     0

@@ -8,11 +8,15 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class GameRoom {
     public Boolean free;
-    // status of players connect
-    public Boolean player1;
+    // status of players
+    public Boolean pl1_connect;
     public ChannelHandlerContext pl1_ctx;
-    public Boolean player2;
+    public Boolean pl1_ready;
+    public ArrayList<Integer> pl1_list;
+    public Boolean pl2_connect;
     public ChannelHandlerContext pl2_ctx;
+    public Boolean pl2_ready;
+    public ArrayList<Integer> pl2_list;
     // true is 1'st player turn,
     // false is 2'nd player turn
     public Boolean turnID;
@@ -22,8 +26,10 @@ public class GameRoom {
         free = false;
         // choose which player turn
         turnID = Math.random() >= 0.5 ? true : false;
-        player1 = true;
-        player2 = false;
+        pl1_connect = true;
+        pl1_ready = false;
+        pl2_connect = false;
+        pl2_ready = false;
         pl1_ctx = inCtx;
     }
     // 2'nd player connected invoke 1'st player card chosing event
@@ -36,9 +42,28 @@ public class GameRoom {
         Data msg = new Data(7, "", 0, list, 0, 0, 0);
         pl1_ctx.writeAndFlush(msg);
     }
+    // start game after receiving both player's card list
+    public void start_play(){
+        if(pl1_ready && pl2_ready){
+            int pl1_turn = 0;
+            int pl2_turn = 0;
+            if(turnID){
+                pl1_turn = 1;
+                pl2_turn = 0;
+            }else{
+                pl1_turn = 0;
+                pl2_turn = 1;
+            }
+            // get start status to players
+            Data pl1_msg = new Data(10, "", pl1_turn, null, 0, 0, 0);
+            Data pl2_msg = new Data(10, "", pl2_turn, null, 0, 0, 0);
+            pl1_ctx.writeAndFlush(pl1_msg);
+            pl2_ctx.writeAndFlush(pl2_msg);
+        }
+    }
     // make room free
     public void free(){
-        if(!player1 && !player2){
+        if(!pl1_connect && !pl2_connect){
             free = true;
         }
     }
