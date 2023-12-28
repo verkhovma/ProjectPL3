@@ -1,15 +1,10 @@
 package vnl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import javafx.application.Platform;
-import javafx.beans.property.StringProperty;
 import javafx.concurrent.Task;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -17,22 +12,19 @@ import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 
 public class ClientHandler extends ChannelHandlerAdapter{
-    private final StringProperty receivingMessageModel;
     private ClientController app;
     // card selectors
     Button btn_select;
     Button btn_deselect;
     
 
-    public ClientHandler(ClientController inApp, StringProperty inReceivingMessageModel){
+    public ClientHandler(ClientController inApp){
         app = inApp;
-        receivingMessageModel = inReceivingMessageModel;
     }
 
     @Override
@@ -115,6 +107,12 @@ public class ClientHandler extends ChannelHandlerAdapter{
                         btn_elem.setOnAction(e->choose_card(btn_elem));
                     }
                 }
+            });
+
+        // get field update
+        }else if(msg.header == 11){
+            Platform.runLater(()->{
+                ;
             });
         }
     }

@@ -17,8 +17,6 @@ import io.netty.handler.logging.LoggingHandler;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -170,8 +168,6 @@ public class ClientController {
 
     // status of connection
     public BooleanProperty connected;
-    // test stroke, transfer received data to binded GUI units
-    public StringProperty receivingMessageModel = new SimpleStringProperty("");
     // contain current Application controller, which allow
     // ClientHandler change GUI
     public ClientController thisController;
@@ -274,7 +270,7 @@ public class ClientController {
                             new LoggingHandler(LogLevel.INFO),
                             new DataDecoder(),
                             new DataEncoder(),
-                            new ClientHandler(thisController, receivingMessageModel)
+                            new ClientHandler(thisController)
                             );
                     }
                 });

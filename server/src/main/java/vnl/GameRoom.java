@@ -25,12 +25,12 @@ public class GameRoom {
     public GameRoom(ChannelHandlerContext inCtx){
         free = false;
         // choose which player turn
-        turnID = Math.random() >= 0.5 ? true : false;
+        turnID = (Math.random() >= 0.5) ? true : false;
         pl1_connect = true;
         pl1_ready = false;
+        pl1_ctx = inCtx;
         pl2_connect = false;
         pl2_ready = false;
-        pl1_ctx = inCtx;
     }
     // 2'nd player connected invoke 1'st player card chosing event
     public void connect2nd(){
@@ -61,9 +61,24 @@ public class GameRoom {
             pl2_ctx.writeAndFlush(pl2_msg);
         }
     }
+    // update field, and move turn to next player
+    public void update(int inNumCard, int inRow, int inCol){
+        // next player
+        turnID = ! turnID;
+        // calculate field
+            // not ready...
+            
+        // send data and notification to next player
+        Data msg = new Data(11, "", 0, null, inNumCard, inRow, inCol);
+        if(turnID){
+            pl1_ctx.writeAndFlush(msg);
+        }else{
+            pl2_ctx.writeAndFlush(msg);
+        }
+    }
     // make room free
     public void free(){
-        if(!pl1_connect && !pl2_connect){
+        if((! pl1_connect) && (! pl2_connect)){
             free = true;
         }
     }

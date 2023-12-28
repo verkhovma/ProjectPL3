@@ -12,7 +12,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter{
     // current room ID
     public int roomId;
     // true mean this is 1'st player
-    // flase mean this is 2'nd player
+    // false mean this is 2'nd player
     public Boolean currentPlayer;
     // list of user's cards; trade list
     public ArrayList<Integer> list;
@@ -89,7 +89,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter{
                 msg = new Data(6, "", 0, null, 0, 0, 0);
             }
         
-        // get chosen card
+        // get chosen cards
         }else if(msg.header == 8){
             if(msg.list.size() == 5){
                 play:{
@@ -106,7 +106,6 @@ public class ServerHandler extends ChannelInboundHandlerAdapter{
                     // start game after receive list
                     rooms.get(roomId-1).start_play();
                     return;
-                    //msg = new Data(0, "", 0, null, 0, 0, 0);
                 }
             }else{
                 msg = new Data(14, "incorrect amount of cards", 0, null, 0, 0, 0);
@@ -120,8 +119,20 @@ public class ServerHandler extends ChannelInboundHandlerAdapter{
                 rooms.get(roomId-1).pl2_connect = false;
             }
             rooms.get(roomId-1).free();
+            // need to add notification about success quit?
+            return;
 
-        //
+        // get turn data from player
+        }else if(msg.header == 12){
+            GameRoom room = rooms.get(roomId-1);
+            if((currentPlayer && room.turnID) || ((! currentPlayer) && (! room.turnID))){
+                // send data and turn notification to next player
+                room.update(msg.card_num, msg.cli_row, msg.cli_col);
+                return;
+            }else{
+                //this is not turn of current player
+                msg = new Data(15, "this is not your turn", 0, null, 0, 0, 0);
+            }
         }
 
         // send answer to client via encoder
@@ -130,6 +141,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter{
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx){
+        // free place if one of players disconnected
         if(currentPlayer){
             rooms.get(roomId-1).pl1_connect = false;
         }else{
